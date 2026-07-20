@@ -292,13 +292,13 @@ bool PawnSimApi::testLineOfSightToPoint(const msr::airlib::GeoPoint& lla) const
         if (AirSimSettings::singleton().show_los_debug_lines_) {
             if (hit) {
                 // No LOS, so draw red line
-                FLinearColor color{ 1.0f, 0, 0, 0.4f };
-                params_.pawn->GetWorld()->LineBatcher->DrawLine(params_.pawn->GetActorLocation(), target_location, color, SDPG_World, 10, -1);
+                FColor color{ 255, 0, 0, 102 };
+                DrawDebugLine(params_.pawn->GetWorld(), params_.pawn->GetActorLocation(), target_location, color, false, -1.0f, SDPG_World, 10.0f);
             }
             else {
                 // Yes LOS, so draw green line
-                FLinearColor color{ 0, 1.0f, 0, 0.4f };
-                params_.pawn->GetWorld()->LineBatcher->DrawLine(params_.pawn->GetActorLocation(), target_location, color, SDPG_World, 10, -1);
+                FColor color{ 0, 255, 0, 102 };
+                DrawDebugLine(params_.pawn->GetWorld(), params_.pawn->GetActorLocation(), target_location, color, false, -1.0f, SDPG_World, 10.0f);
             }
         }
     },

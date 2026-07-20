@@ -780,17 +780,17 @@ bool WorldSimApi::testLineOfSightBetweenPoints(const msr::airlib::GeoPoint& lla1
         hit = simmode_->GetWorld()->LineTraceTestByChannel(point1, point2, ECC_Visibility, collision_params);
 
         if (settings.show_los_debug_lines_) {
-            FLinearColor color;
+            FColor color;
             if (hit) {
                 // No LOS, so draw red line
-                color = FLinearColor{ 1.0f, 0, 0, 0.4f };
+                color = FColor{ 255, 0, 0, 102 };
             }
             else {
                 // Yes LOS, so draw green line
-                color = FLinearColor{ 0, 1.0f, 0, 0.4f };
+                color = FColor{ 0, 255, 0, 102 };
             }
 
-            simmode_->GetWorld()->PersistentLineBatcher->DrawLine(point1, point2, color, SDPG_World, 4, 999999);
+            DrawDebugLine(simmode_->GetWorld(), point1, point2, color, true, 999999.0f, SDPG_World, 4.0f);
         }
     },
                                              true);

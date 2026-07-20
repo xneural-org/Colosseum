@@ -14,7 +14,32 @@ if [ "$(uname)" == "Darwin" ]; then
 fi
 
 DEBUG="${DEBUG:-false}"
-function version_less_than_equal_to() { test "$(printf '%s\n' "$@" | sort -V | head -n 1)" = "$1"; }
+function version_less_than_equal_to() {
+    python3 - "$1" "$2" <<'PY'
+import re
+import sys
+
+def parts(version):
+    return [int(part) for part in re.findall(r"\d+", version)]
+
+left = parts(sys.argv[1])
+right = parts(sys.argv[2])
+size = max(len(left), len(right))
+left += [0] * (size - len(left))
+right += [0] * (size - len(right))
+sys.exit(0 if left <= right else 1)
+PY
+}
+
+function download_file() {
+    local url="$1"
+    local output="$2"
+    if command -v wget >/dev/null 2>&1; then
+        wget -O "$output" "$url"
+    else
+        curl -L "$url" -o "$output"
+    fi
+}
 
 # brew gives error if package is already installed
 function brew_install() { brew list "$1" &>/dev/null || brew install "$1"; }
@@ -38,10 +63,12 @@ done
 
 # llvm tools
 if [ "$(uname)" == "Darwin" ]; then # osx
-    brew update
-    # Update below line for newer versions
-    #brew install llvm@8
-    brew install llvm
+    if command -v brew >/dev/null 2>&1; then
+        brew update
+        brew install llvm
+    else
+        echo "Homebrew is not installed; using Apple command line tools for clang."
+    fi
 else #linux
     sudo apt-get update
     sudo apt-get -y install --no-install-recommends \
@@ -81,12 +108,19 @@ if [ "$(uname)" == "Darwin" ]; then # osx
     # MacOS 11 has new Python env management that breaks the Python 2-to-3
     # build process. We need to make sure brew updates before attempting to
     # install, since it will update packaages
-    brew update
-    brew_install wget
-    brew_install coreutils
+    if command -v brew >/dev/null 2>&1; then
+        brew update
+        brew_install wget
+        brew_install coreutils
+    fi
 
     if version_less_than_equal_to "$cmake_ver" "$MIN_CMAKE_VERSION"; then
-        brew install cmake  # should get cmake 3.8
+        if command -v brew >/dev/null 2>&1; then
+            brew install cmake
+        else
+            echo "CMake $MIN_CMAKE_VERSION or newer is required. Install it or put it on PATH before running setup.sh."
+            exit 1
+        fi
     else
         echo "Already have good version of cmake: $cmake_ver"
     fi
@@ -144,7 +178,7 @@ if [ ! -d "external/rpclib/rpclib-2.3.0" ]; then
     echo "Downloading rpclib..."
     echo "*********************************************************************************************"
 
-    wget https://github.com/rpclib/rpclib/archive/v2.3.0.zip
+    download_file https://github.com/rpclib/rpclib/archive/v2.3.0.zip v2.3.0.zip
 
     # remove previous versions
     rm -rf "external/rpclib"
@@ -170,7 +204,7 @@ if $downloadHighPolySuv; then
             fi
             mkdir -p "suv_download_tmp"
             cd suv_download_tmp
-            wget  https://github.com/CodexLabsLLC/Colosseum/releases/download/v2.0.0-beta.0/car_assets.zip
+            download_file https://github.com/CodexLabsLLC/Colosseum/releases/download/v2.0.0-beta.0/car_assets.zip car_assets.zip
             if [ -d "../Unreal/Plugins/AirSim/Content/VehicleAdv/SUV" ]; then
                 rm -rf "../Unreal/Plugins/AirSim/Content/VehicleAdv/SUV"
             fi
@@ -186,7 +220,7 @@ echo "Installing Eigen library..."
 
 if [ ! -d "AirLib/deps/eigen3" ]; then
     echo "Downloading Eigen..."
-    wget -O eigen3.zip https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
+    download_file https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip eigen3.zip
     unzip -q eigen3.zip -d temp_eigen
     mkdir -p AirLib/deps/eigen3
     mv temp_eigen/eigen*/Eigen AirLib/deps/eigen3

@@ -196,6 +196,9 @@ AppPackages/
 
 # Others
 ClientBin/
+.DS_Store
+*.sln
+*.xcworkspace/
 [Ss]tyle[Cc]op.*
 ~$*
 *~

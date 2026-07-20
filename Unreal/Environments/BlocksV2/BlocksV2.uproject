@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.4",
+	"EngineAssociation": "5.6",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -8,22 +8,26 @@
 			"Name": "BlocksV2",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
-            "AdditionalDependencies": [
-                "AirSim"
-            ]
+			"AdditionalDependencies": [
+				"AirSim"
+			]
 		}
 	],
 	"Plugins": [
 		{
-            "Name": "AirSim",
-            "Enabled": true
-        },
+			"Name": "AirSim",
+			"Enabled": true
+		},
 		{
 			"Name": "ModelingToolsEditorMode",
 			"Enabled": true,
 			"TargetAllowList": [
 				"Editor"
 			]
+		},
+		{
+			"Name": "USDImporter",
+			"Enabled": true
 		}
 	]
 }
